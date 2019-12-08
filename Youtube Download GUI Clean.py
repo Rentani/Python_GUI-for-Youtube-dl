@@ -11,6 +11,7 @@ from dataclasses import dataclass
 #TODO: Working logger object
 #TODO: Directory options
 #TODO: Error Checks (Although not expecting any)
+#TODO: Better way of dealing with Elements. Maybe do a check so I don't completely rebuild the list.
 
 #program vars/setup
 WIDTH = 1280
@@ -39,17 +40,17 @@ class InfoContainer:
         self.id = self.url[self.url.index('=')+1:] #Grabs the video id
         self.thumbpath = str("./thumbnails/" + self.id)
         # get title (faster to scrape than using youtube-dl)
-        __soup = BeautifulSoup( requests.get(self.url).text, 'html.parser' )
-        __soup.prettify('utf-8')
-        for span in __soup.findAll('span', attrs={'class': 'watch-title'}):
-            self.title = span.text.strip()
+        self.title = BeautifulSoup( requests.get(self.url).text, 'html.parser' )
+        self.title.prettify('utf-8')
+        self.title = self.title.find('span', attrs={'class': 'watch-title'})
+        self.title = self.title.text.strip()
         # get thumbnail
         if not os.path.isfile(str(self.thumbpath + ".jpg")):
             self.imgURL = "http://i1.ytimg.com/vi/" + self.id + "/hqdefault.jpg"
             urllib.request.urlretrieve(self.imgURL, str(self.thumbpath + ".jpg"))
-        __imgtemp = Image.open(str(self.thumbpath + ".jpg"))
-        __imgtemp = __imgtemp.resize((192,108), Image.ANTIALIAS)
-        self.img = ImageTk.PhotoImage(__imgtemp)
+        self.img = Image.open(str(self.thumbpath + ".jpg"))
+        self.img = self.img.resize((192,108), Image.ANTIALIAS)
+        self.img = ImageTk.PhotoImage(self.img)
 
 #   Element:        enables the visual information to be displayed
 class Element:
@@ -61,7 +62,7 @@ class Element:
         self.description = tk.Label(self.frame, text=self.info.title, bg='#363636', fg='#f6e080')
         self.remove = tk.Button(self.frame, text='Remove', bg='#303030', fg='#f6e080', activebackground='#262626', activeforeground='#f6e080', relief=tk.FLAT, bd=0,command=lambda: RemoveFromList(self.info.url, f, v))
         # place widgets
-        self.frame.place(width=WIDTH-4, height=112, x=2, y=2+(v.index(self.info.url)*122))
+        self.frame.place(width=WIDTH-4, height=112, x=2, y=2+(v.index(self.info.url)*112))
         self.thumbnail.place(width=192, height=108, x=0, y=2)
         self.description.place(width=WIDTH-266, height=108, x=192, y=2)
         self.remove.place(width=70, height=108, x=WIDTH-74, y=2)
