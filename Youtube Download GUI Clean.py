@@ -8,8 +8,9 @@ from bs4 import BeautifulSoup
 from PIL import Image, ImageTk
 from dataclasses import dataclass
 
-#TODO: Implement directory options
-#TODO: Add Error Checks (Although not expecting any)
+#TODO: Working logger object
+#TODO: Directory options
+#TODO: Error Checks (Although not expecting any)
 
 #program vars/setup
 WIDTH = 1280
@@ -37,10 +38,12 @@ class InfoContainer:
         self.url = url
         self.id = self.url[self.url.index('=')+1:] #Grabs the video id
         self.thumbpath = str("./thumbnails/" + self.id)
+        # get title (faster to scrape than using youtube-dl)
         __soup = BeautifulSoup( requests.get(self.url).text, 'html.parser' )
         __soup.prettify('utf-8')
         for span in __soup.findAll('span', attrs={'class': 'watch-title'}):
             self.title = span.text.strip()
+        # get thumbnail
         if not os.path.isfile(str(self.thumbpath + ".jpg")):
             self.imgURL = "http://i1.ytimg.com/vi/" + self.id + "/hqdefault.jpg"
             urllib.request.urlretrieve(self.imgURL, str(self.thumbpath + ".jpg"))
