@@ -8,6 +8,9 @@ from bs4 import BeautifulSoup
 from PIL import Image, ImageTk
 from dataclasses import dataclass
 
+#TODO: Implement directory options
+#TODO: Add Error Checks (Although not expecting any)
+
 #program vars/setup
 WIDTH = 1280
 HEIGHT = 800     
@@ -24,7 +27,7 @@ if not os.path.exists('songs'):
     os.mkdir('songs')
 if not os.path.exists('videos'):
     os.mkdir('videos')
-#TODO: Implement directory options
+
 
 #   InfoContainer: a container for the video information
 #                  uses urllib to get the thumbnail as it's faster than using youtube-dl
