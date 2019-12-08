@@ -6,7 +6,6 @@ from PIL import Image, ImageTk
 import os
 import youtube_dl
 import concurrent.futures
-#https://www.youtube.com/watch?v=UkY8HvgvBJ8
 
 # class creates an element. Display tumbnail, link and have a remove button
 class Video:
