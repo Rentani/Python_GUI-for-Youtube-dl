@@ -43,7 +43,6 @@ class Info:
 WIDTH = 1280
 HEIGHT = 800
 VIDEOLINKS = []
-OUTPUTTEMP = ""
 
 # create temp directory
 dirName = 'thumbnails'
