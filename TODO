@@ -1,0 +1,6 @@
+#TODO: Working logger object.
+#TODO: Directory options.
+#TODO: Error Checks (Although not expecting any).
+#TODO: Better way of dealing with Elements. Maybe do a check so I don't completely rebuild the list.
+#TODO: Rework UI. Maybe create a mock up first.
+#TODO: Make the list section (where the visual elements are stored) scrollable

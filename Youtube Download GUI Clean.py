@@ -8,11 +8,6 @@ from bs4 import BeautifulSoup
 from PIL import Image, ImageTk
 from dataclasses import dataclass
 
-#TODO: Working logger object
-#TODO: Directory options
-#TODO: Error Checks (Although not expecting any)
-#TODO: Better way of dealing with Elements. Maybe do a check so I don't completely rebuild the list.
-
 #program vars/setup
 WIDTH = 1280
 HEIGHT = 800     
