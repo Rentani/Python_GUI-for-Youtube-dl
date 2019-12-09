@@ -12,6 +12,7 @@ WINDOW = tk.Tk()
 WINDOW.resizable(0,0)
 WINDOW.title( "Youtube-dl GUI")
 CONSOLEOUTPUT = tk.StringVar()
+WIDGETDATA = {}
 
 #check for directories
 if not os.path.exists('thumbnails'):
@@ -50,11 +51,9 @@ class InfoContainer:
         self.id = self.url[self.url.index('=')+1:]
         self.thumbpath = str("./thumbnails/" + self.id)
         # get title
-        #p1 = time.perf_counter()
         self.title = requests.get("https://www.youtube.com/embed/"+self.id).text
         self.title = self.title[self.title.index("<title>")+7:self.title.index("</title>")-10]
         self.title = html.unescape(self.title)
-        #print(f'Finished in {round(time.perf_counter()-p1, 2)} second(s)')
         # get thumbnail
         self.imgURL = "http://i1.ytimg.com/vi/" + self.id + "/sddefault.jpg"
         if not os.path.isfile(str(self.thumbpath + ".jpg")):
@@ -78,7 +77,7 @@ class Element:
         self.thumbnail.place(width=192, height=108, x=0, y=2)
         self.description.place(width=WIDTH-266, height=108, x=192, y=2)
         self.remove.place(width=70, height=108, x=WIDTH-74, y=2)
-
+        
 #   Logger:         enables debug/warning/error loggin from youtube-dl
 # class Logger(object):
 #     def debug(self, msg):
@@ -89,6 +88,21 @@ class Element:
     
 #     def error(self, msg):
 #         PrintToConsole(msg)
+
+#   Perf:           performance logger for functions
+class Performance:
+    def __init__(self):
+        self.start = 0
+    
+    def Start(self):
+        self.start = time.perf_counter()
+
+    def Stop(self):
+        if self.start == 0:
+            print('Start function not called \n')
+        else:
+            print(f'Finished in {round(time.perf_counter()-self.start, 2)} second(s)')
+perf = Performance()
 
 #functions
 def PrintToConsole(msg):
@@ -133,7 +147,7 @@ def RemoveFromList(url, f, v):
         ThreadHandler(UpdateList, f, v)
 
 def AddToList(url, f, v):
-    if url != "" and v.count(url) == 0:
+    if url != "" and not url in v:
         v.append(url)
         ThreadHandler(UpdateList, f, v)
         i_input.delete(0, tk.END)

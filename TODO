@@ -1,6 +1,11 @@
 Youtube-dl GUI: 
        CURRENTLY WORKING ON:
               ☐ Better way of dealing with Elements. I don't want to rebuild the list everytime.
+                     I've started testing. Check dict.py in tests for the methods and functions.
+                     So far it didn't work.
+                     I think the best way to do it is ~
+                            Save the data object in a dict with the key being the url. Create all the layout widgets each time BASED on the data object. 
+                            Never delete the data object until it's removed. This should save time when 'reprinting' the element.
 
        IMPLEMENT:
               ☐ Allow CTRL+A in input box
