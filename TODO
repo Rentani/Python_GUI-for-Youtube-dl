@@ -1,6 +1,85 @@
-#TODO: Working logger object.
-#TODO: Directory options.
-#TODO: Error Checks (Although not expecting any).
-#TODO: Better way of dealing with Elements. Maybe do a check so I don't completely rebuild the list.
-#TODO: Rework UI. Maybe create a mock up first.
-#TODO: Make the list section (where the visual elements are stored) scrollable
+Youtube-dl GUI: 
+       IMPLEMENT:
+              ☐ Better way of dealing with Elements. Maybe do a check so I don't completely rebuild the list.
+              ☐ Rework UI. Maybe create a mock up first.
+              ☐ Allow CTRL+A in input box
+              
+       FIX:
+
+       CHANGE:
+              ☐ Directory options.
+              ☐ Error Checks (Although not expecting any).
+              ☐ Make the list section (where the visual elements are stored) scrollable.
+              ☐ Speed up info grabbing
+                     Opening image from URL is slower than caching the image.
+                     Caching takes up space though and is possibly uneeded.
+                     This is only true if the thumbnail was already downloaded though.
+                     Test Links
+                     https://www.youtube.com/watch?v=iITO8xBvcHI
+                     https://www.youtube.com/watch?v=Nj5RiXNaqzc
+
+                     Image Grabbing
+                     URLLIB3 IS TOO SLOW >2s
+                     wget ~
+                            Link1 ~ 0.14s
+                            Link2 ~ 0.13s
+                     Requests + BytesIO ~
+                            Link1 ~ 0.14s
+                            Link2 ~ 0.13s
+                     Cached ~
+                            Link1 ~ 0.16s
+                                  ~ 0.00s
+                            Link2 ~ 0.16s
+                                  ~ 0.00s
+                     Cached is best option as it's barely slower but far quicker if they use the same video again
+
+
+                     Title Scrape
+                     default ~ 
+                            Link1 ~ 0.67s
+                            Link2 ~ 0.65s
+                     This is far too long just to get a title of a video.
+                     Longest part is ~ self.title = BeautifulSoup( requests.get(self.url).text, 'html.parser' ) at 0.6s
+                                     ~ of this, the 'requests.get(self.url).text' takes 0.57s
+                                     ~ the parsing and extracting takes 0.07s
+                     
+                     urllib.request.urlopen().read() ~
+                            Not even viable. It causes the rest of the stuff to take longer whilst still being 0.6s
+                     urllib.request.urlopen() ~
+                            Link1 ~ 0.17s
+                            BUT OVERALL NOW TAKES 1.89s
+                            NOT VIABLE
+                     pytube ~
+                            >1.5s
+                            NOT VIABLE
+                     Using default and the title of the webpage ~
+                            Link1 ~ 0.6s
+                            Link2 ~ 0.65s
+                            This is barely faster but not as precise.
+                     Mechanize ~
+                            Link1 ~ 0.83s
+                            NOT VIABLE
+                     Using default and manually going through the webpage for the title ~
+                            Link1 ~ 0.59s
+                            Link2 ~ 0.575s
+                     CURRENT BEST IS DEFAULT + MANUAL TRIMMING
+                     
+                     
+                     
+
+                            
+
+
+       COMPLETED:
+
+       CANCELED:
+       ✘ Working logger object. @cancelled(19-12-09 13:13)
+              adding in the logger has made the program lock up again
+              this could be because youtube-dl runs the logger in a loop waiting for inputs
+              maybe create a thread, pre-create logger on thread, delete thread when finished
+       
+       
+       ✘ Check if it's faster to use youtube-dl to get the info rather than 2 seperate downloads. @cancelled(19-12-09 13:13)
+              Added perf counter
+              It is far slower. <2s vs >0.75s
+       

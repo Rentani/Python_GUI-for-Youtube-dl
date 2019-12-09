@@ -1,12 +1,9 @@
 import tkinter as tk
-import os
-import youtube_dl
-import concurrent.futures
-import urllib.request
-import requests
-from bs4 import BeautifulSoup
+import os, youtube_dl, concurrent.futures, requests, urllib.request
+import time
+import html
 from PIL import Image, ImageTk
-from dataclasses import dataclass
+from io import BytesIO
 
 #program vars/setup
 WIDTH = 1280
@@ -29,24 +26,45 @@ if not os.path.exists('videos'):
 #   InfoContainer: a container for the video information
 #                  uses urllib to get the thumbnail as it's faster than using youtube-dl
 #                  uses requests to get the title as it's faster than using youtube-dl
+# class InfoContainer:
+#     def __init__(self, url):
+#         #self.data = youtube_dl.YoutubeDL.
+#         self.url = url
+#         self.id = self.url[self.url.index('=')+1:] #Grabs the video id
+#         self.thumbpath = str("./thumbnails/" + self.id)
+#         # get title (faster to scrape than using youtube-dl)
+#         self.title = BeautifulSoup( requests.get(self.url).text, 'html.parser' )
+#         self.title.prettify('utf-8')
+#         self.title = self.title.find('span', attrs={'class': 'watch-title'})
+#         self.title = self.title.text.strip()
+#         # get thumbnail
+#         if not os.path.isfile(str(self.thumbpath + ".jpg")):
+#             self.imgURL = "http://i1.ytimg.com/vi/" + self.id + "/hqdefault.jpg"
+#             urllib.request.urlretrieve(self.imgURL, str(self.thumbpath + ".jpg"))
+#         self.img = Image.open(str(self.thumbpath + ".jpg"))
+#         self.img = self.img.resize((192,108), Image.ANTIALIAS)
+#         self.img = ImageTk.PhotoImage(self.img)    
+
 class InfoContainer:
     def __init__(self, url):
         self.url = url
         self.id = self.url[self.url.index('=')+1:] #Grabs the video id
         self.thumbpath = str("./thumbnails/" + self.id)
         # get title (faster to scrape than using youtube-dl)
-        self.title = BeautifulSoup( requests.get(self.url).text, 'html.parser' )
-        self.title.prettify('utf-8')
-        self.title = self.title.find('span', attrs={'class': 'watch-title'})
-        self.title = self.title.text.strip()
+        #p1 = time.perf_counter()
+        self.title = requests.get(self.url).text
+        self.title = self.title[self.title.index("<title>")+7:self.title.index("</title>")-10]
+        self.title = html.unescape(self.title)
+        #print(f'Finished in {round(time.perf_counter()-p1, 2)} second(s)')
         # get thumbnail
+        self.imgURL = "http://i1.ytimg.com/vi/" + self.id + "/hqdefault.jpg"
         if not os.path.isfile(str(self.thumbpath + ".jpg")):
             self.imgURL = "http://i1.ytimg.com/vi/" + self.id + "/hqdefault.jpg"
             urllib.request.urlretrieve(self.imgURL, str(self.thumbpath + ".jpg"))
         self.img = Image.open(str(self.thumbpath + ".jpg"))
         self.img = self.img.resize((192,108), Image.ANTIALIAS)
-        self.img = ImageTk.PhotoImage(self.img)
-
+        self.img = ImageTk.PhotoImage(self.img)       
+        
 #   Element:        enables the visual information to be displayed
 class Element:
     def __init__(self, url, f, v):
@@ -61,6 +79,18 @@ class Element:
         self.thumbnail.place(width=192, height=108, x=0, y=2)
         self.description.place(width=WIDTH-266, height=108, x=192, y=2)
         self.remove.place(width=70, height=108, x=WIDTH-74, y=2)
+
+#   Logger:         enables debug/warning/error loggin from youtube-dl
+class Logger(object):
+    def debug(self, msg):
+        PrintToConsole(msg)
+    
+    def warning(self, msg):
+        PrintToConsole(msg)
+    
+    def error(self, msg):
+        PrintToConsole(msg)
+
 
 #functions
 def PrintToConsole(msg):
@@ -125,12 +155,16 @@ video = {
     'format': 'bestvideo+bestaudio/best',
     'outtmpl': '%(title)s.%(ext)s',
     'progress_hooks': [YoutubeHook],
+    'ignoreerrors': True,
+    #'logger': Logger(),
 }
 
 audio = {
     'format': 'bestaudio/best',
     'outtmpl': '%(title)s.%(ext)s',
     'progress_hooks': [YoutubeHook],
+    'ignoreerrors': True,
+    #'logger': Logger(),
     'postprocessors': [
             {
             'key': 'FFmpegExtractAudio',
