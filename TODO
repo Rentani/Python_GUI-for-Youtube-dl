@@ -1,89 +1,27 @@
 Youtube-dl GUI: 
        CURRENTLY WORKING ON:
-              ☐ Better way of dealing with Elements. I don't want to rebuild the list everytime.
-                     I've started testing. Check dict.py in tests for the methods and functions.
-                     So far it didn't work.
-                     I think the best way to do it is ~
-                            Save the data object in a dict with the key being the url. Create all the layout widgets each time BASED on the data object. 
-                            Never delete the data object until it's removed. This should save time when 'reprinting' the element.
+              ☐ Auto scroll console output
 
        IMPLEMENT:
-              ☐ Allow CTRL+A in input box
+              ☐ Allow CTRL+A and ENTER in input box
               ☐ Directory options.
               ☐ Error Checks (Although not expecting any).
               ☐ Make the list section (where the visual elements are stored) scrollable.
-              
+
        FIX:
-                     
+              
+
        CHANGE:
               ☐ Rework UI. Maybe create a mock up first.
               
 
        COMPLETED:
               ✔ Speed up info grabbing @done(19-12-09 16:28) 
-              Done due to the real issue being the rebuilding of the list each time. 0.6s for link grabbing is fine.
-              Best way to speed this up would be to use the youtube API
-                     Opening image from URL is slower than caching the image.
-                     Caching takes up space though and is possibly uneeded.
-                     This is only true if the thumbnail was already downloaded though.
-                     Test Links
-                     https://www.youtube.com/watch?v=iITO8xBvcHI
-                     https://www.youtube.com/watch?v=Nj5RiXNaqzc
-
-                     Image Grabbing
-                     URLLIB3 IS TOO SLOW >2s
-                     wget ~
-                            Link1 ~ 0.14s
-                            Link2 ~ 0.13s
-                     Requests + BytesIO ~
-                            Link1 ~ 0.14s
-                            Link2 ~ 0.13s
-                     Cached ~
-                            Link1 ~ 0.16s
-                            ~ 0.00s
-                            Link2 ~ 0.16s
-                            ~ 0.00s
-                     Cached is best option as it's barely slower but far quicker if they use the same video again
-
-
-                     Title Scrape
-                     default ~ 
-                            Link1 ~ 0.67s
-                            Link2 ~ 0.65s
-                     This is far too long just to get a title of a video.
-                     Longest part is ~ self.title = BeautifulSoup( requests.get(self.url).text, 'html.parser' ) at 0.6s
-                                   ~ of this, the 'requests.get(self.url).text' takes 0.57s
-                                   ~ the parsing and extracting takes 0.07s
-                     
-                     urllib.request.urlopen().read() ~
-                            Not even viable. It causes the rest of the stuff to take longer whilst still being 0.6s
-                     urllib.request.urlopen() ~
-                            Link1 ~ 0.17s
-                            BUT OVERALL NOW TAKES 1.89s
-                            NOT VIABLE
-                     pytube ~
-                            >1.5s
-                            NOT VIABLE
-                     Using default and the title of the webpage ~
-                            Link1 ~ 0.6s
-                            Link2 ~ 0.65s
-                            This is barely faster but not as precise.
-                     Mechanize ~
-                            Link1 ~ 0.83s
-                            NOT VIABLE
-                     Using default and manually going through the webpage for the title ~
-                            Link1 ~ 0.59s
-                            Link2 ~ 0.575s
-                     CURRENT BEST IS DEFAULT + MANUAL TRIMMING
-
-       CANCELED:
-       ✘ Working logger object. @cancelled(19-12-09 13:13)
-              adding in the logger has made the program lock up again
-              this could be because youtube-dl runs the logger in a loop waiting for inputs
-              maybe create a thread, pre-create logger on thread, delete thread when finished
-       
-       
-       ✘ Check if it's faster to use youtube-dl to get the info rather than 2 seperate downloads. @cancelled(19-12-09 13:13)
-              Added perf counter
-              It is far slower. <2s vs >0.75s
-       
+                     From 0.6 - 0.7 down to 0.27 - 0.35.
+                     Instead of downloading a youtube page, it's now downloading a small embed page which only really contains the title. This cut 0.25-0.3s
+                     Instead of downloading a high res imaged, now downloading a smaller image which cuts 1/4 of the time. 0.16s to 0.12s
+              ✔ Better way of dealing with Elements. @done(19-12-09 22:14)
+                     Info is now stored seperately so it no longer redownloads the thumbnail etc everytime the list is rebuilt.
+                     The list now only deletes the tkinter widgets and recreates them and inputs the information via the InfoContainer
+              ✔ Download no longer seems threaded. @done(19-12-09 22:29)
+                     Fixed a typo. Ended up calling the function instead of sending it to the threadhandler.

@@ -4,6 +4,7 @@ import time
 import html
 from PIL import Image, ImageTk
 
+
 #program vars/setup
 WIDTH = 1280
 HEIGHT = 800     
@@ -26,58 +27,37 @@ if not os.path.exists('videos'):
 #   InfoContainer: a container for the video information
 #                  uses urllib to get the thumbnail as it's faster than using youtube-dl
 #                  uses requests to get the title as it's faster than using youtube-dl
-# class InfoContainer:
-#     def __init__(self, url):
-#         #self.data = youtube_dl.YoutubeDL.
-#         self.url = url
-#         self.id = self.url[self.url.index('=')+1:] #Grabs the video id
-#         self.thumbpath = str("./thumbnails/" + self.id)
-#         # get title (faster to scrape than using youtube-dl)
-#         self.title = BeautifulSoup( requests.get(self.url).text, 'html.parser' )
-#         self.title.prettify('utf-8')
-#         self.title = self.title.find('span', attrs={'class': 'watch-title'})
-#         self.title = self.title.text.strip()
-#         # get thumbnail
-#         if not os.path.isfile(str(self.thumbpath + ".jpg")):
-#             self.imgURL = "http://i1.ytimg.com/vi/" + self.id + "/hqdefault.jpg"
-#             urllib.request.urlretrieve(self.imgURL, str(self.thumbpath + ".jpg"))
-#         self.img = Image.open(str(self.thumbpath + ".jpg"))
-#         self.img = self.img.resize((192,108), Image.ANTIALIAS)
-#         self.img = ImageTk.PhotoImage(self.img)    
-
 class InfoContainer:
     def __init__(self, url):
         self.url = url
         self.id = self.url[self.url.index('=')+1:]
-        self.thumbpath = str("./thumbnails/" + self.id)
-        # get title
-        self.title = requests.get("https://www.youtube.com/embed/"+self.id).text
+        self.thumbpath = ''.join(["./thumbnails/", self.id])
+        self.title = requests.get(''.join(["https://www.youtube.com/embed/",self.id])).text
         self.title = self.title[self.title.index("<title>")+7:self.title.index("</title>")-10]
         self.title = html.unescape(self.title)
-        # get thumbnail
-        self.imgURL = "http://i1.ytimg.com/vi/" + self.id + "/sddefault.jpg"
-        if not os.path.isfile(str(self.thumbpath + ".jpg")):
-            self.imgURL = "http://i1.ytimg.com/vi/" + self.id + "/hqdefault.jpg"
-            urllib.request.urlretrieve(self.imgURL, str(self.thumbpath + ".jpg"))
-        self.img = Image.open(str(self.thumbpath + ".jpg"))
+        self.imgURL = ''.join(["ttp://i1.ytimg.com/vi/", self.id, "/sddefault.jpg"])
+        if not os.path.isfile(''.join([self.thumbpath, ".jpg"])):
+            self.imgURL = ''.join(["http://i1.ytimg.com/vi/", self.id, "/hqdefault.jpg"])
+            urllib.request.urlretrieve(self.imgURL, ''.join([self.thumbpath, ".jpg"]))
+        self.img = Image.open(''.join([self.thumbpath, ".jpg"]))
         self.img = self.img.resize((192,108), Image.ANTIALIAS)
-        self.img = ImageTk.PhotoImage(self.img)       
-        
+        self.img = ImageTk.PhotoImage(self.img)
+
+
 #   Element:        enables the visual information to be displayed
 class Element:
-    def __init__(self, url, f, v):
-        # create vars/widgets
-        self.info = InfoContainer(url)
+    def __init__(self, url, f, v, i):
+        self.info = i
         self.frame = tk.Frame(f, bg='#262626')
         self.thumbnail = tk.Label(self.frame, image=self.info.img, bg='#303030')
         self.description = tk.Label(self.frame, text=self.info.title, bg='#363636', fg='#f6e080')
         self.remove = tk.Button(self.frame, text='Remove', bg='#303030', fg='#f6e080', activebackground='#262626', activeforeground='#f6e080', relief=tk.FLAT, bd=0,command=lambda: RemoveFromList(self.info.url, f, v))
-        # place widgets
         self.frame.place(width=WIDTH-4, height=112, x=2, y=2+(v.index(self.info.url)*112))
         self.thumbnail.place(width=192, height=108, x=0, y=2)
         self.description.place(width=WIDTH-266, height=108, x=192, y=2)
         self.remove.place(width=70, height=108, x=WIDTH-74, y=2)
-        
+
+
 #   Logger:         enables debug/warning/error loggin from youtube-dl
 # class Logger(object):
 #     def debug(self, msg):
@@ -88,6 +68,7 @@ class Element:
     
 #     def error(self, msg):
 #         PrintToConsole(msg)
+
 
 #   Perf:           performance logger for functions
 class Performance:
@@ -104,6 +85,7 @@ class Performance:
             print(f'Finished in {round(time.perf_counter()-self.start, 2)} second(s)')
 perf = Performance()
 
+
 #functions
 def PrintToConsole(msg):
     t_console.configure(state=tk.NORMAL)
@@ -112,7 +94,7 @@ def PrintToConsole(msg):
 
 def YoutubeHook(d):
     if d['status'] == 'downloading':
-        PrintToConsole("[" + d['filename'] + "] " + d['_percent_str'] + "  ETA: " + d['_eta_str'])
+        PrintToConsole(''.join(["[", d['filename'], "] ", d['_percent_str'], "  ETA: ", d['_eta_str']]))
 
     if d['status'] == 'finished':
         PrintToConsole('Download Complete')
@@ -132,25 +114,31 @@ def ThreadHandler(func, *args):
 
 def ClearList(f, v):
     VIDEOLINKS.clear()
-    ThreadHandler(UpdateList, f, v)
+    WIDGETDATA.clear()
+    UpdateList(f, v)
 
 def UpdateList(f,v):
     for widget in f.winfo_children():
         widget.destroy()
 
     for url in v:
-        Element(url, f, v)
+        Element(url, f, v, WIDGETDATA[url])
 
 def RemoveFromList(url, f, v):
     if url != "":
         v.pop(v.index(url))
-        ThreadHandler(UpdateList, f, v)
+        WIDGETDATA.pop(url)
+        UpdateList(f, v)
 
 def AddToList(url, f, v):
     if url != "" and not url in v:
         v.append(url)
-        ThreadHandler(UpdateList, f, v)
+        ThreadHandler(AddData, url, f, v)
         i_input.delete(0, tk.END)
+
+def AddData(url, f, v):
+    WIDGETDATA.update({url: InfoContainer(url)})
+    UpdateList(f, v)
 
 def DownloadList(opts, f, v):
     if len(v) > 0:
@@ -206,10 +194,10 @@ i_input = tk.Entry(f_input, font=('Arial', 8), bg='#363636', fg='#f6e080', bd=0,
 i_input.place(width=WIDTH-89-4-70, height=24, x=91, y=2)
 i_input.focus_set()
 #       input button
-b_input = tk.Button(buffer, text='Add', bg='#303030', fg='#f6e080', activebackground='#262626', activeforeground='#f6e080', relief=tk.FLAT, bd=0, command=lambda: ThreadHandler(AddToList(i_input.get(), f_data, VIDEOLINKS)))
+b_input = tk.Button(buffer, text='Add', bg='#303030', fg='#f6e080', activebackground='#262626', activeforeground='#f6e080', relief=tk.FLAT, bd=0, command=lambda: AddToList(i_input.get(), f_data, VIDEOLINKS))
 b_input.place(width=70, height=24, x=WIDTH-72, y=2)
 
-#   data frame
+#   data frame container
 f_data = tk.Frame(buffer, bg='#202020')
 f_data.place(width=WIDTH, height=HEIGHT-28-26-204, x=0, y=HEIGHT-(HEIGHT-28))
 
@@ -226,10 +214,10 @@ t_console.pack(side=tk.LEFT, anchor=tk.N)
 f_download = tk.Frame(buffer, bg='#262626')
 f_download.place(width=WIDTH, height=26, x=0, y=HEIGHT-26)
 #       download video
-b_download_video = tk.Button(f_download, text="Download Video", bg='#303030', fg='#f6e080', activebackground='#262626', activeforeground='#f6e080', relief=tk.FLAT, bd=0, command=lambda: ThreadHandler(DownloadList(video, f_data, VIDEOLINKS)))
+b_download_video = tk.Button(f_download, text="Download Video", bg='#303030', fg='#f6e080', activebackground='#262626', activeforeground='#f6e080', relief=tk.FLAT, bd=0, command=lambda: ThreadHandler(DownloadList, video, f_data, VIDEOLINKS))
 b_download_video.place(width=WIDTH/2-3, height=24, x=2, y=2)
 #       download audio
-b_download_audio = tk.Button(f_download, text="Download Audio", bg='#303030', fg='#f6e080', activebackground='#262626', activeforeground='#f6e080', relief=tk.FLAT, bd=0, command=lambda: ThreadHandler(DownloadList(audio, f_data, VIDEOLINKS)))
+b_download_audio = tk.Button(f_download, text="Download Audio", bg='#303030', fg='#f6e080', activebackground='#262626', activeforeground='#f6e080', relief=tk.FLAT, bd=0, command=lambda: ThreadHandler(DownloadList, audio, f_data, VIDEOLINKS))
 b_download_audio.place(width=WIDTH/2-3, height=24, x=WIDTH/2+1, y=2)
 
 #main loop
