@@ -3,7 +3,6 @@ import os, youtube_dl, concurrent.futures, requests, urllib.request
 import time
 import html
 from PIL import Image, ImageTk
-from io import BytesIO
 
 #program vars/setup
 WIDTH = 1280
@@ -48,9 +47,9 @@ if not os.path.exists('videos'):
 class InfoContainer:
     def __init__(self, url):
         self.url = url
-        self.id = self.url[self.url.index('=')+1:] #Grabs the video id
+        self.id = self.url[self.url.index('=')+1:]
         self.thumbpath = str("./thumbnails/" + self.id)
-        # get title (faster to scrape than using youtube-dl)
+        # get title
         #p1 = time.perf_counter()
         self.title = requests.get(self.url).text
         self.title = self.title[self.title.index("<title>")+7:self.title.index("</title>")-10]
@@ -81,16 +80,15 @@ class Element:
         self.remove.place(width=70, height=108, x=WIDTH-74, y=2)
 
 #   Logger:         enables debug/warning/error loggin from youtube-dl
-class Logger(object):
-    def debug(self, msg):
-        PrintToConsole(msg)
+# class Logger(object):
+#     def debug(self, msg):
+#         PrintToConsole(msg)
     
-    def warning(self, msg):
-        PrintToConsole(msg)
+#     def warning(self, msg):
+#         PrintToConsole(msg)
     
-    def error(self, msg):
-        PrintToConsole(msg)
-
+#     def error(self, msg):
+#         PrintToConsole(msg)
 
 #functions
 def PrintToConsole(msg):
