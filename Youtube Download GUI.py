@@ -50,19 +50,19 @@ class InfoContainer:
         self.id = self.url[self.url.index('=')+1:]
         self.thumbpath = str("./thumbnails/" + self.id)
         # get title
-        self.title = requests.get(self.url).text
+        #p1 = time.perf_counter()
+        self.title = requests.get("https://www.youtube.com/embed/"+self.id).text
         self.title = self.title[self.title.index("<title>")+7:self.title.index("</title>")-10]
         self.title = html.unescape(self.title)
+        #print(f'Finished in {round(time.perf_counter()-p1, 2)} second(s)')
         # get thumbnail
-        p1 = time.perf_counter()
-        self.imgURL = "http://i1.ytimg.com/vi/" + self.id + "/default.jpg"
+        self.imgURL = "http://i1.ytimg.com/vi/" + self.id + "/sddefault.jpg"
         if not os.path.isfile(str(self.thumbpath + ".jpg")):
             self.imgURL = "http://i1.ytimg.com/vi/" + self.id + "/hqdefault.jpg"
             urllib.request.urlretrieve(self.imgURL, str(self.thumbpath + ".jpg"))
         self.img = Image.open(str(self.thumbpath + ".jpg"))
         self.img = self.img.resize((192,108), Image.ANTIALIAS)
         self.img = ImageTk.PhotoImage(self.img)       
-        print(f'Finished in {round(time.perf_counter()-p1, 2)} second(s)')
         
 #   Element:        enables the visual information to be displayed
 class Element:
