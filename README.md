@@ -5,4 +5,4 @@ Currently there is no support for playlists but that will be implemented later o
 
 Currently it's able to add multiple videos to a list and then download them all as either a video or mp3.
 
-*REQUIRES* both Youtube-dl and FFMPEG to be install. They also need to be added to the system path.
+_REQUIRES_ both Youtube-dl and FFMPEG to be install. They also need to be added to the system path.
