@@ -1,9 +1,9 @@
 Youtube-dl GUI: 
        CURRENTLY WORKING ON:
-              ☐ Scroll to bottom of list on element add
+              
        Notes:
               
-       
+
        IMPLEMENT:
               ☐ Add support for playlist
               ☐ Directory options.
@@ -12,11 +12,12 @@ Youtube-dl GUI:
               
 
        FIX:
-              
+              ☐ Handle new lines in url submits
 
        CHANGE:
               ☐ Mock up UI using Figma.
               ☐ Rework UI.
+              ☐ Rework scrolling.
               
 
        COMPLETED:
@@ -37,3 +38,11 @@ Youtube-dl GUI:
                      Took a while. Couldn't get canvas scrolling working. Ended up making a hacky scroll that works fine.
                      Works via a variable that contains a scroll amount. This amount is sent to the element creation when the update list is called.
                      The scroll amount is controlled via a bind.
+              ✔ Make some improvements to the scrolling @done(19-12-10 23:01)
+                     Done some work. It still needs a better method really.
+                     Currently it clamps to only being able to scroll as far as there's videos.
+                     BUT you can bypass it by scrolling fast. <-Not sure why.
+
+       CANCELLED:
+              ✘ Scroll to bottom of list on element add @cancelled(19-12-10 23:02)
+                     Until there's a better scroll method it's just not worth make QoL changes.

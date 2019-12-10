@@ -13,8 +13,10 @@ WINDOW.title( "Youtube-dl GUI")
 CONSOLEOUTPUT = tk.StringVar()
 WIDGETDATA = {}
 SCROLLDATA = {
-    'height': 0,
+    'height': 2,
     'amount': 0,
+    'current': 0,
+    'value': 0,
     }
 
 #check for directories
@@ -92,13 +94,22 @@ def YoutubeHook(d):
 
 def _onMousewheel(event):
     if event.widget is t_console:
-        print("Yes")
         event.widget.yview_scroll(int(-1*(event.delta/120)), "units")
     else:
-        SCROLLDATA['amount'] += (-1 * event.delta)
-        if SCROLLDATA['amount'] < 0:
+        SCROLLDATA['value'] = int((-1 * event.delta/120)*38)
+        if SCROLLDATA['height'] > (HEIGHT-228): #If you need to scroll
+            print(f"Amount[{SCROLLDATA['amount']}] : Value[{SCROLLDATA['value']}]")
+            if SCROLLDATA['value'] > 0: #Down
+                if not SCROLLDATA['amount'] > (SCROLLDATA['height'] - (HEIGHT-228) -152):
+                    SCROLLDATA['amount'] += SCROLLDATA['value']
+                    UpdateList(f_data, VIDEOLINKS)
+            if SCROLLDATA['value'] < 0: #Up
+                if SCROLLDATA['amount'] > -1*(SCROLLDATA['height']-((5*114)+2)):
+                    SCROLLDATA['amount'] += SCROLLDATA['value']
+                    UpdateList(f_data, VIDEOLINKS)
+        else:
             SCROLLDATA['amount'] = 0
-        UpdateList(f_data, VIDEOLINKS)
+
 
 def _select_all(event):
     i_input.select_range(0, tk.END)
@@ -121,8 +132,10 @@ def UpdateList(f,v):
     for widget in f.winfo_children():
         widget.destroy()
 
+    SCROLLDATA['height'] = 2
     for url in v:
         Element(url, f, v, WIDGETDATA[url], SCROLLDATA)
+        SCROLLDATA['height'] += 114
 
 def RemoveFromList(url, f, v):
     if url != "":
@@ -202,12 +215,12 @@ b_input.place(width=70, height=24, x=WIDTH-72, y=2)
 
 #   data frame container (Contains all the visual information widgets after adding a YouTube video)
 f_data = tk.Frame(buffer, bg='#202020')
-f_data.place(width=WIDTH, height=HEIGHT-28-26-204, x=0, y=28)
+f_data.place(width=WIDTH, height=HEIGHT-228, x=0, y=28)
 WINDOW.bind('<MouseWheel>', _onMousewheel)
 #   console output
 #       console frame
 f_console = tk.Frame(buffer, bg='#262626')
-f_console.place(width=WIDTH, height = 204, x=0, y=HEIGHT-230)
+f_console.place(width=WIDTH, height=186, x=0, y=HEIGHT-212)
 #       console textbox
 t_console = tk.Text(f_console, width=WIDTH-4, bg='#262626', fg='#f6e080', relief=tk.FLAT, state=tk.DISABLED)
 t_console.pack(side=tk.LEFT, anchor=tk.N)
