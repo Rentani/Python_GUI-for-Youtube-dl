@@ -12,6 +12,12 @@ WINDOW.resizable(0,0)
 WINDOW.title( "Youtube-dl GUI")
 CONSOLEOUTPUT = tk.StringVar()
 WIDGETDATA = {}
+SCROLLDATA = {
+    'height': 2,
+    'amount': 0,
+    'current': 0,
+    'value': 0,
+    }
 
 #check for directories
 if not os.path.exists('thumbnails'):
@@ -44,13 +50,13 @@ class InfoContainer:
 
 #   Element:        enables the visual information to be displayed
 class Element:
-    def __init__(self, url, f, v, i):
+    def __init__(self, url, f, v, i, sd):
         self.info = i
         self.frame = tk.Frame(f, bg='#262626')
         self.thumbnail = tk.Label(self.frame, image=self.info.img, bg='#303030')
         self.description = tk.Label(self.frame, text=self.info.title, bg='#363636', fg='#f6e080')
-        self.remove = tk.Button(self.frame, text='Remove', bg='#303030', fg='#f6e080', activebackground='#262626', activeforeground='#f6e080', relief=tk.FLAT, bd=0,command=lambda: RemoveFromList(self.info.url, f, v))
-        self.frame.place(width=WIDTH-4, height=112, x=2, y=2+(v.index(self.info.url)*112))
+        self.remove = tk.Button(self.frame, text='Remove', bg='#303030', fg='#f6e080', activebackground='#262626', activeforeground='#f6e080', highlightcolor='#262626', relief=tk.FLAT, bd=0,command=lambda: RemoveFromList(self.info.url, f, v))
+        self.frame.place(width=WIDTH-4, height=112, x=2, y=2+(v.index(self.info.url)*112)+sd['amount'])
         self.thumbnail.place(width=192, height=108, x=0, y=2)
         self.description.place(width=WIDTH-266, height=108, x=192, y=2)
         self.remove.place(width=70, height=108, x=WIDTH-74, y=2)
@@ -81,21 +87,30 @@ def PrintToConsole(msg):
 
 def YoutubeHook(d):
     if d['status'] == 'downloading':
-        PrintToConsole(''.join(["[", d['filename'], "] ", d['_percent_str'], "  ETA: ", d['_eta_str']]))
+        PrintToConsole(''.join(["[", d['filename'], "] ", d['_percent_str'], " : ", str(d['downloaded_bytes']), "/", str(d['total_bytes'])]))
 
     if d['status'] == 'finished':
-        PrintToConsole('Download Complete')
-
-def _bindMousewheel(event):
-    t_console.bind("<MouseWheel>", _onMousewheel)
-
-
-def _unbindMousewheel(event):
-    t_console.unbind("<MouseWheel>")
+        PrintToConsole(''.join(['Download Complete: ', d['filename']]))
 
 def _onMousewheel(event):
-    t_console.yview_scroll(int(-1*(event.delta/120)), "units")
-    
+    if event.widget is t_console:
+        event.widget.yview_scroll(int(-1*(event.delta/120)), "units")
+    else:
+        SCROLLDATA['value'] = int((-1 * event.delta/120)*38)
+        if SCROLLDATA['height'] > (HEIGHT-228): #If you need to scroll
+            print(f"Amount[{SCROLLDATA['amount']}] : Value[{SCROLLDATA['value']}]")
+            if SCROLLDATA['value'] > 0: #Down
+                if not SCROLLDATA['amount'] > (SCROLLDATA['height'] - (HEIGHT-228) -152):
+                    SCROLLDATA['amount'] += SCROLLDATA['value']
+                    UpdateList(f_data, VIDEOLINKS)
+            if SCROLLDATA['value'] < 0: #Up
+                if SCROLLDATA['amount'] > -1*(SCROLLDATA['height']-((5*114)+2)):
+                    SCROLLDATA['amount'] += SCROLLDATA['value']
+                    UpdateList(f_data, VIDEOLINKS)
+        else:
+            SCROLLDATA['amount'] = 0
+
+
 def _select_all(event):
     i_input.select_range(0, tk.END)
     i_input.icursor(tk.END)
@@ -117,8 +132,10 @@ def UpdateList(f,v):
     for widget in f.winfo_children():
         widget.destroy()
 
+    SCROLLDATA['height'] = 2
     for url in v:
-        Element(url, f, v, WIDGETDATA[url])
+        Element(url, f, v, WIDGETDATA[url], SCROLLDATA)
+        SCROLLDATA['height'] += 114
 
 def RemoveFromList(url, f, v):
     if url != "":
@@ -152,14 +169,14 @@ def DownloadList(opts, f, v):
 #youtube-dl option vars
 video = {
     'format': 'bestvideo+bestaudio/best',
-    'outtmpl': '%(title)s.%(ext)s',
+    'outtmpl': '/videos/%(title)s.%(ext)s',
     'progress_hooks': [YoutubeHook],
     'ignoreerrors': True,
 }
 
 audio = {
     'format': 'bestaudio/best',
-    'outtmpl': '%(title)s.%(ext)s',
+    'outtmpl': '/songs/%(title)s.%(ext)s',
     'progress_hooks': [YoutubeHook],
     'ignoreerrors': True,
     'postprocessors': [
@@ -198,17 +215,15 @@ b_input.place(width=70, height=24, x=WIDTH-72, y=2)
 
 #   data frame container (Contains all the visual information widgets after adding a YouTube video)
 f_data = tk.Frame(buffer, bg='#202020')
-f_data.place(width=WIDTH, height=HEIGHT-28-26-204, x=0, y=HEIGHT-(HEIGHT-28))
-
+f_data.place(width=WIDTH, height=HEIGHT-228, x=0, y=28)
+WINDOW.bind('<MouseWheel>', _onMousewheel)
 #   console output
 #       console frame
 f_console = tk.Frame(buffer, bg='#262626')
-f_console.place(width=WIDTH, height = 204, x=0, y=HEIGHT-26-204)
+f_console.place(width=WIDTH, height=186, x=0, y=HEIGHT-212)
 #       console textbox
 t_console = tk.Text(f_console, width=WIDTH-4, bg='#262626', fg='#f6e080', relief=tk.FLAT, state=tk.DISABLED)
 t_console.pack(side=tk.LEFT, anchor=tk.N)
-t_console.bind('<Enter>', _bindMousewheel)
-t_console.bind('<Leave>', _unbindMousewheel)
 
 #   download buttons
 #       download frame
