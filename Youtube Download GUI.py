@@ -1,7 +1,5 @@
 import tkinter as tk
-import os, youtube_dl, concurrent.futures, requests, urllib.request
-import time
-import html
+import os, youtube_dl, concurrent.futures, requests, urllib.request, time, html
 from PIL import Image, ImageTk
 
 
@@ -58,18 +56,6 @@ class Element:
         self.remove.place(width=70, height=108, x=WIDTH-74, y=2)
 
 
-#   Logger:         enables debug/warning/error loggin from youtube-dl
-# class Logger(object):
-#     def debug(self, msg):
-#         PrintToConsole(msg)
-    
-#     def warning(self, msg):
-#         PrintToConsole(msg)
-    
-#     def error(self, msg):
-#         PrintToConsole(msg)
-
-
 #   Perf:           performance logger for functions
 class Performance:
     def __init__(self):
@@ -89,8 +75,9 @@ perf = Performance()
 #functions
 def PrintToConsole(msg):
     t_console.configure(state=tk.NORMAL)
-    t_console.insert(tk.END, msg + '\n')
+    t_console.insert(tk.END, ''.join([msg, '\n']))
     t_console.configure(state=tk.DISABLED)
+    t_console.yview(tk.END)
 
 def YoutubeHook(d):
     if d['status'] == 'downloading':
@@ -99,14 +86,23 @@ def YoutubeHook(d):
     if d['status'] == 'finished':
         PrintToConsole('Download Complete')
 
-def _bound_to_mousewheel(self, event):
-    self.t_console.bindall("<MouseWheel>", self._on_mousewheel)
+def _bindMousewheel(event):
+    t_console.bind("<MouseWheel>", _onMousewheel)
 
-def _unbound_to_mousewheel(self, event):
-    self.t_console.unbind_all("<MouseWheel>")
 
-def _on_mousewheel(self, event):
-    self.t_console.yview_scroll(int(-1*(event.delta/120)), "units")
+def _unbindMousewheel(event):
+    t_console.unbind("<MouseWheel>")
+
+def _onMousewheel(event):
+    t_console.yview_scroll(int(-1*(event.delta/120)), "units")
+    
+def _select_all(event):
+    i_input.select_range(0, tk.END)
+    i_input.icursor(tk.END)
+    return 'break'
+
+def _submit(event):
+    AddToList(i_input.get(), f_data, VIDEOLINKS)
 
 def ThreadHandler(func, *args):
     executor = concurrent.futures.ThreadPoolExecutor()
@@ -142,6 +138,7 @@ def AddData(url, f, v):
 
 def DownloadList(opts, f, v):
     if len(v) > 0:
+        PrintToConsole("Download Starting...")
         for widget in f_data.winfo_children():
             widget.destroy()
         for url in VIDEOLINKS:
@@ -149,6 +146,8 @@ def DownloadList(opts, f, v):
                 ydl.download([url])
         ClearList(f, v)
         PrintToConsole("Merging/Converting Complete")
+    else:
+        PrintToConsole("Nothing to download")
 
 #youtube-dl option vars
 video = {
@@ -156,7 +155,6 @@ video = {
     'outtmpl': '%(title)s.%(ext)s',
     'progress_hooks': [YoutubeHook],
     'ignoreerrors': True,
-    #'logger': Logger(),
 }
 
 audio = {
@@ -164,7 +162,6 @@ audio = {
     'outtmpl': '%(title)s.%(ext)s',
     'progress_hooks': [YoutubeHook],
     'ignoreerrors': True,
-    #'logger': Logger(),
     'postprocessors': [
             {
             'key': 'FFmpegExtractAudio',
@@ -178,11 +175,11 @@ audio = {
 }
 
 #create layout
-#   create buffer
+#   create buffer (base widget)
 buffer = tk.Canvas(WINDOW, height=HEIGHT, width=WIDTH, bg='black', highlightthickness=0)
 buffer.pack()
 
-#   url processor
+#   url processor bar
 #       input frame
 f_input = tk.Frame(buffer, bg='#262626')
 f_input.place(relx=0, rely=0, relwidth=1, height=28)
@@ -193,11 +190,13 @@ l_input.place(width=89, height=24, x=2, y=2)
 i_input = tk.Entry(f_input, font=('Arial', 8), bg='#363636', fg='#f6e080', bd=0, relief=tk.FLAT)
 i_input.place(width=WIDTH-89-4-70, height=24, x=91, y=2)
 i_input.focus_set()
-#       input button
+i_input.bind('<Control-a>', _select_all)
+i_input.bind('<Return>', _submit)
+#       input add button
 b_input = tk.Button(buffer, text='Add', bg='#303030', fg='#f6e080', activebackground='#262626', activeforeground='#f6e080', relief=tk.FLAT, bd=0, command=lambda: AddToList(i_input.get(), f_data, VIDEOLINKS))
 b_input.place(width=70, height=24, x=WIDTH-72, y=2)
 
-#   data frame container
+#   data frame container (Contains all the visual information widgets after adding a YouTube video)
 f_data = tk.Frame(buffer, bg='#202020')
 f_data.place(width=WIDTH, height=HEIGHT-28-26-204, x=0, y=HEIGHT-(HEIGHT-28))
 
@@ -208,15 +207,17 @@ f_console.place(width=WIDTH, height = 204, x=0, y=HEIGHT-26-204)
 #       console textbox
 t_console = tk.Text(f_console, width=WIDTH-4, bg='#262626', fg='#f6e080', relief=tk.FLAT, state=tk.DISABLED)
 t_console.pack(side=tk.LEFT, anchor=tk.N)
+t_console.bind('<Enter>', _bindMousewheel)
+t_console.bind('<Leave>', _unbindMousewheel)
 
 #   download buttons
 #       download frame
 f_download = tk.Frame(buffer, bg='#262626')
 f_download.place(width=WIDTH, height=26, x=0, y=HEIGHT-26)
-#       download video
+#       download video button
 b_download_video = tk.Button(f_download, text="Download Video", bg='#303030', fg='#f6e080', activebackground='#262626', activeforeground='#f6e080', relief=tk.FLAT, bd=0, command=lambda: ThreadHandler(DownloadList, video, f_data, VIDEOLINKS))
 b_download_video.place(width=WIDTH/2-3, height=24, x=2, y=2)
-#       download audio
+#       download audio button
 b_download_audio = tk.Button(f_download, text="Download Audio", bg='#303030', fg='#f6e080', activebackground='#262626', activeforeground='#f6e080', relief=tk.FLAT, bd=0, command=lambda: ThreadHandler(DownloadList, audio, f_data, VIDEOLINKS))
 b_download_audio.place(width=WIDTH/2-3, height=24, x=WIDTH/2+1, y=2)
 

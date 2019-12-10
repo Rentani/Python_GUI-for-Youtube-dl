@@ -1,23 +1,33 @@
 Youtube-dl GUI: 
        CURRENTLY WORKING ON:
-              ☐ Auto scroll console output
+              ☐ Make the list section (where the visual elements are stored) scrollable. 
+       Notes:
+              Scrolling frames aren't a thing.
+              Solutions ~
+                     Use a canvas and use Create_Window
+                     Create a custom scroll by manipulating the x of all object in the list
+                            This would actually require recreating the list everytime as you change the x of items.
 
+
+       
        IMPLEMENT:
-              ☐ Allow CTRL+A and ENTER in input box
+              ☐ Add support for playlist
               ☐ Directory options.
               ☐ Error Checks (Although not expecting any).
-              ☐ Make the list section (where the visual elements are stored) scrollable.
+              ☐ Remove performance tools. Remove Time import.
+              
 
        FIX:
               
 
        CHANGE:
-              ☐ Rework UI. Maybe create a mock up first.
+              ☐ Mock up UI using Figma.
+              ☐ Rework UI.
               
 
        COMPLETED:
               ✔ Speed up info grabbing @done(19-12-09 16:28) 
-                     From 0.6 - 0.7 down to 0.27 - 0.35.
+                     From 0.65s down to 0.32s. (Average)
                      Instead of downloading a youtube page, it's now downloading a small embed page which only really contains the title. This cut 0.25-0.3s
                      Instead of downloading a high res imaged, now downloading a smaller image which cuts 1/4 of the time. 0.16s to 0.12s
               ✔ Better way of dealing with Elements. @done(19-12-09 22:14)
@@ -25,3 +35,7 @@ Youtube-dl GUI:
                      The list now only deletes the tkinter widgets and recreates them and inputs the information via the InfoContainer
               ✔ Download no longer seems threaded. @done(19-12-09 22:29)
                      Fixed a typo. Ended up calling the function instead of sending it to the threadhandler.
+              ✔ Auto scroll console output @done(19-12-09 22:50)
+                     Simple addition. Changed the yview to the bottom each time the console has an entry.
+              ✔ Allow CTRL+A and ENTER in input box @done(19-12-10 00:54)
+                     Fairly simple. Added some binds to the input Entry after creation.
