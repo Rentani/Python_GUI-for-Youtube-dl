@@ -81,20 +81,20 @@ def PrintToConsole(msg):
 
 def YoutubeHook(d):
     if d['status'] == 'downloading':
-        PrintToConsole(''.join(["[", d['filename'], "] ", d['_percent_str'], "  ETA: ", d['_eta_str']]))
+        PrintToConsole(''.join(["[", d['filename'], "] ", d['_percent_str'], " : ", d['downloaded_bytes'], "/", d['total_bytes']]))
 
     if d['status'] == 'finished':
-        PrintToConsole('Download Complete')
+        PrintToConsole(''.join(['Download Complete: ', d['filename']]))
 
 def _bindMousewheel(event):
-    t_console.bind("<MouseWheel>", _onMousewheel)
+    event.widget.bind("<MouseWheel>", _onMousewheel)
 
 
 def _unbindMousewheel(event):
-    t_console.unbind("<MouseWheel>")
+    event.widget.unbind("<MouseWheel>")
 
 def _onMousewheel(event):
-    t_console.yview_scroll(int(-1*(event.delta/120)), "units")
+    event.widget.yview_scroll(int(-1*(event.delta/120)), "units")
     
 def _select_all(event):
     i_input.select_range(0, tk.END)
